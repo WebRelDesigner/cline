@@ -5,6 +5,7 @@ import {
 	ListResourcesResultSchema,
 	ListResourceTemplatesResultSchema,
 	ListToolsResultSchema,
+	ToolListChangedNotificationSchema,
 	ReadResourceResultSchema,
 } from "@modelcontextprotocol/sdk/types.js"
 import chokidar, { FSWatcher } from "chokidar"
@@ -281,6 +282,12 @@ export class McpHub {
 
 			// Connect
 			await client.connect(transport)
+			
+			client.setNotificationHandler(ToolListChangedNotificationSchema, async (notification) => {
+				console.log(`[MCP] Notification for "${name}":`, notification)
+				connection.server.tools = await this.fetchToolsList(name)
+				this.notifyWebviewOfServerChanges()
+			})
 
 			connection.server.status = "connected"
 			connection.server.error = ""
